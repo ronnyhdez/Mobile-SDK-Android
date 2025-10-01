@@ -35,8 +35,29 @@ import java.util.Stack;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+import android.util.Log;
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
+    private void startGimbalCommandServer() {
+        try {
+            commandServer = new GimbalCommandServer();
+            commandServer.start();
+            Log.i(TAG, "Gimbal command server started on port 8080");
+            ToastUtils.setResultToToast("HTTP server started on port 8080");
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to start gimbal command server", e);
+            ToastUtils.setResultToToast("Failed to start HTTP server: " + e.getMessage());
+        }
+    }
+
+    private void stopGimbalCommandServer() {
+        if (commandServer != null) {
+            commandServer.stop();
+            Log.i(TAG, "Gimbal command server stopped");
+        }
+    }
     private static final String TAG = MainActivity.class.getSimpleName();
     private FrameLayout contentFrameLayout;
     private ObjectAnimator pushInAnimator;
@@ -49,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private MenuItem searchViewItem;
     private MenuItem hintItem;
+    private GimbalCommandServer commandServer;
 
     //region Life-cycle
     @Override
@@ -59,11 +81,13 @@ public class MainActivity extends AppCompatActivity {
         setupActionBar();
         contentFrameLayout = (FrameLayout) findViewById(R.id.framelayout_content);
         initParams();
+        startGimbalCommandServer();
     }
 
     @Override
     protected void onDestroy() {
         DJISampleApplication.getEventBus().unregister(this);
+        stopGimbalCommandServer();
         super.onDestroy();
     }
 
