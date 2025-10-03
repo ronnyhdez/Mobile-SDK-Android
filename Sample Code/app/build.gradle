@@ -7,6 +7,13 @@ repositories {
     mavenLocal()
 }
 
+def secretsPropertiesFile = rootProject.file("secrets.properties")
+def secretsProperties = new Properties()
+if (secretsPropertiesFile.exists()) {
+    secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+}
+
+
 android {
     compileSdkVersion 33
     useLibrary 'org.apache.http.legacy'
@@ -17,6 +24,9 @@ android {
         targetSdkVersion 34
         multiDexEnabled true
         versionCode 1
+
+        manifestPlaceholders = [DJI_APP_KEY: secretsProperties['DJI_APP_KEY'] ?: ""]
+
         ndk {
             // On x86 devices that run Android API 23 or above, if the application is targeted with API 23 or
             // above, FFmpeg lib might lead to runtime crashes or warnings.
